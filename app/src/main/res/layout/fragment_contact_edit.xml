@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+    >
+
+    <include layout="@layout/edit_image_and_name" />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="30dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/contact_phone_label"
+            android:background="@color/colorGrey"
+            android:padding="5dp"
+            android:paddingTop="20dp"
+            android:textSize="18sp"
+            android:gravity="start|bottom"
+            style="?android:listSeparatorTextViewStyle"
+            />
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                      android:orientation="vertical"
+                      android:layout_width="fill_parent"
+                      android:layout_height="wrap_content"
+                      android:id="@+id/edit_contact_phones_list">
+        </LinearLayout>
+        <Button
+            android:id="@+id/edit_contact_add_phone_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/plus"
+            android:textSize="18sp"
+            />
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="30dp"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/email_phone_label"
+            android:background="@color/colorGrey"
+            android:padding="5dp"
+            android:paddingTop="20dp"
+            android:textSize="18sp"
+            android:gravity="start|bottom"
+            style="?android:listSeparatorTextViewStyle"
+            />
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                      android:orientation="vertical"
+                      android:layout_width="fill_parent"
+                      android:layout_height="wrap_content"
+                      android:id="@+id/edit_contact_emails_list">
+        </LinearLayout>
+        <Button
+            android:id="@+id/edit_contact_add_email_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/plus"
+            android:textSize="18sp"
+            />
+    </LinearLayout>
+</LinearLayout>
+</ScrollView>
