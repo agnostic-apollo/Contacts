@@ -84,35 +84,30 @@ public class PictureUtils {
         return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(selectedImage), null, options);
     }
 
-    public static Bitmap getCircularBitmap(String filePath, int imageViewWidth , int imageViewHeight ) {
+    public static Bitmap getCircularBitmap(String filePath, float diameterDP, int imageViewWidth , int imageViewHeight ) {
 
-        Bitmap bitmap = getScaledBitmap(filePath, (int) (imageViewWidth*0.8), (int) (imageViewHeight*0.8));
+        Bitmap bitmap = getScaledBitmap(filePath, (int) (imageViewWidth*0.7), (int) (imageViewHeight*0.7));
 
-        float width;
-        if (bitmap.getWidth() > bitmap.getHeight())
-            width = bitmap.getHeight();
-        else
-            width = bitmap.getWidth();
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+        float diameterPixels = diameterDP * (metrics.densityDpi / 160f);
 
-        Bitmap output = Bitmap.createBitmap(bitmap.getHeight(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap output = Bitmap.createBitmap((int) diameterPixels, (int) diameterPixels, Bitmap.Config.ARGB_8888);
 
         Canvas canvas = new Canvas(output);
 
-        final int color = 0xff424242;
-        final Paint paint = new Paint();
-        final Rect rect = new Rect(0, 0, (int) width, (int) width);
-
+        final Rect rect = new Rect(0, 0, (int) diameterPixels, (int) diameterPixels);
         RectF rectF = new RectF(rect);
 
 
-
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
         paint.setAntiAlias(true);
         paint.setColor(color);
-        //canvas.drawARGB(0, 0, 0, 0);
+
         canvas.drawOval(rectF, paint);
-        //canvas.drawCircle((bitmap.getWidth()/2)+4, (bitmap.getHeight()/2)+4, r, paint);
-        float left = (width-bitmap.getWidth())/2;
-        float top = (width-bitmap.getHeight())/2;
+
+        float left = (diameterPixels-bitmap.getWidth())/2;
+        float top = (diameterPixels-bitmap.getHeight())/2;
 
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawBitmap(bitmap, left, top, paint);

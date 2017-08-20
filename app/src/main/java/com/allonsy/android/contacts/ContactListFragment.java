@@ -236,25 +236,26 @@ public class ContactListFragment extends Fragment {
         }
         private void updatePhotoView()
         {
-            File mPhotoFile = ContactLab.get(getActivity()).getPhotoFile(mContact);
-            if (mPhotoFile == null || !mPhotoFile.exists()) {
-                String name = mContact.getName();
-                if(name != null && !name.isEmpty()) {
-                    String initials = String.valueOf(name.charAt(0));
-                    //String char2 = String.valueOf(name.substring(name.indexOf(' ') + 1).charAt(0));
-                    //if(char2!=null && !char2.isEmpty())
-                       // initials = initials + char2;
-                    Bitmap bitmap = PictureUtils.generateCircleBitmap(getContext(),
-                            PictureUtils.getMaterialColor(name),
-                            40, initials);
-                    // + String.valueOf())
-                    mPhotoView.setImageBitmap(bitmap);
-                }
-                else
-                    mPhotoView.setImageDrawable(null);
+            if(imageViewWidth!=0 && imageViewHeight!=0) {
+                File mPhotoFile = ContactLab.get(getActivity()).getPhotoFile(mContact);
+                if (mPhotoFile == null || !mPhotoFile.exists()) {
+                    String name = mContact.getName();
+                    if (name != null && !name.isEmpty()) {
+                        String initials = String.valueOf(name.charAt(0));
+                        //String char2 = String.valueOf(name.substring(name.indexOf(' ') + 1).charAt(0));
+                        //if(char2!=null && !char2.isEmpty())
+                        // initials = initials + char2;
+                        Bitmap bitmap = PictureUtils.generateCircleBitmap(getContext(),
+                                PictureUtils.getMaterialColor(name),
+                                40, initials);
+                        // + String.valueOf())
+                        mPhotoView.setImageBitmap(bitmap);
+                    } else
+                        mPhotoView.setImageDrawable(null);
 
-            } else {
-                mPhotoView.setImageBitmap(PictureUtils.getCircularBitmap(mPhotoFile.getPath(),imageViewWidth, imageViewHeight));
+                } else {
+                    mPhotoView.setImageBitmap(PictureUtils.getCircularBitmap(mPhotoFile.getPath(), 40,imageViewWidth, imageViewHeight));
+                }
             }
 
         }
