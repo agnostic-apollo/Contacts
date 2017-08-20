@@ -15,4 +15,4 @@ Images are selected from gallery with an intent.
 [Download APK](https://github.com/agnostic-apollo/Contacts/releases)  
 
 Credits  
- [EmergentOrder opencsv](https://github.com/EmergentOrder/opencsv).  
+ [EmergentOrder opencsv](https://github.com/EmergentOrder/opencsv)  
