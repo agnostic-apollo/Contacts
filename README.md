@@ -2,7 +2,7 @@
 A simple contacts android app
 
 # Features:   
-Add delete contacts and store their name, image and multiple phone numbers and emails.  
+Add/Delete contacts and store their name, image and multiple phone numbers and emails.  
 Start a call or email by clicking phone numbers or emails.  
 Export contacts to csv
 
