@@ -4,6 +4,7 @@ package com.allonsy.android.contacts;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -19,6 +20,7 @@ import android.os.Environment;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -144,14 +146,12 @@ public class ContactViewFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_item_contact_edit:
-                Contact contact = new Contact();
                 Intent intent = ContactEditActivity.newIntent(getActivity(), mContact);
                 startActivityForResult(intent,ContactEditFragment.UPDATE_CONTACT);
                 //getActivity().finish();
                 return true;
             case R.id.menu_item_contact_delete:
-                ContactLab.get(getActivity()).deleteContact(mContact);
-                getActivity().finish();
+                showConfirmDeleteDialogue();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -293,6 +293,30 @@ public class ContactViewFragment extends Fragment {
         ContactViewFragment fragment = new ContactViewFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    private void showConfirmDeleteDialogue() {
+
+        new AlertDialog.Builder(getActivity())
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("Delete")
+                .setMessage("Are you sure?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ContactLab.get(getActivity()).deleteContact(mContact);
+                        getActivity().finish();
+                    }
+
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+
+                })
+                .show();
     }
 
 }

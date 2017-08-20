@@ -2,6 +2,8 @@ package com.allonsy.android.contacts;
 
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -10,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -20,8 +23,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -33,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class ContactEditFragment extends Fragment {
 
@@ -43,15 +45,15 @@ public class ContactEditFragment extends Fragment {
     private File mContactPhotoFile;
     private String mContactPhotoName;
     private String pictureStoragePath;
-    private EditText mName;
+    private ExtendedEditText mName;
     String name;
     private ImageView mPhotoView;
     private ImageButton mPhotoAdd;
     private ImageButton mPhotoDelete;
-    private List<EditText> mPhones;
+    private List<ExtendedEditText> mPhones;
     List<String> phones;
     private Button mAddPhoneButton;
-    private List<EditText> mEmails;
+    private List<ExtendedEditText> mEmails;
     List<String> emails;
     private Button mAddEmailButton;
 
@@ -67,8 +69,8 @@ public class ContactEditFragment extends Fragment {
     private static final String DIALOG_CONTACT_IMAGE = "DialogContactImage";
     public static final String CONTACT_OBJECT = "contactObject";
     private static final int REQUEST_PHOTO= 0;
-    public static final int ADD_CONTACT= 0;
-    public static final int UPDATE_CONTACT= 1;
+    public static final int ADD_CONTACT = 0;
+    public static final int UPDATE_CONTACT = 1;
     public static final String RETURN_STATE = "contactState";
     private static boolean deletePhoto;
 
@@ -114,7 +116,7 @@ public class ContactEditFragment extends Fragment {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
 
                 if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK){
-                    save();
+                    validate();
                     return true;
                 }
                 return false;
@@ -134,9 +136,10 @@ public class ContactEditFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_contact_edit, container, false);
 
-        mName = (EditText) v.findViewById(R.id.edit_contact_name);
+        mName = (ExtendedEditText) v.findViewById(R.id.edit_contact_name);
         name=mContact.getName();
         mName.setText(name);
+        setEditTextKeyImeChangeListener(mName);
         mName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -292,7 +295,7 @@ public class ContactEditFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_item_save:
-                save();
+                validate();
                 return true;
             case R.id.menu_item_cancel:
                 cancel();
@@ -302,12 +305,14 @@ public class ContactEditFragment extends Fragment {
         }
     }
 
-    private void save() {
+    private void validate() {
         boolean valid = true;
+        boolean validBefore=true;
 
         //check name validity
+        //p{L} matches any kind of letter from any language.
         if (name.isEmpty() || (!name.isEmpty() && !name.matches("^[\\p{L} .'-{0-9}]+$"))) {
-            mName.setError("enter a valid name");
+            mName.setError("valid characters include (a-z)(0-9)-_'.()");
             valid = false;
         } else if (name.length() > 25) {
             mName.setError("name can only be 25 chars");
@@ -315,19 +320,28 @@ public class ContactEditFragment extends Fragment {
         } else
             mName.setError(null);
 
+        if(!valid && validBefore) {
+            validBefore=false;
+            Toast.makeText(getActivity(), "enter a valid contact name", Toast.LENGTH_SHORT).show();
+        }
+
         for (int i = 0; i != mPhones.size(); i++) {
             String phone = phones.get(i);
             //check phone validity
             if (!phone.isEmpty() && !android.util.Patterns.PHONE.matcher(phone).matches()) {
-                mPhones.get(i).setError("enter a valid phone number");
+                mPhones.get(i).setError("only standard phone number format is valid");
                 valid = false;
             }
             if (phone.length() > 25) {
-                mPhones.get(i).setError("phone can only be 25 chars");
+                mPhones.get(i).setError("phone number can only be 25 chars");
                 valid = false;
             } else
                 mPhones.get(i).setError(null);
+        }
 
+        if(!valid && validBefore) {
+            validBefore=false;
+            Toast.makeText(getActivity(), "enter valid phone numbers", Toast.LENGTH_SHORT).show();
         }
 
         for (int i = 0; i != mEmails.size(); i++) {
@@ -335,54 +349,61 @@ public class ContactEditFragment extends Fragment {
 
             //check email validity
             if (!email.isEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                mEmails.get(i).setError("enter a valid email address");
+                mEmails.get(i).setError("only standard email format is valid");
                 valid = false;
             } else if (email.length() > 25) {
                 mEmails.get(i).setError("email can only be 25 chars");
                 valid = false;
             } else
                 mEmails.get(i).setError(null);
+        }
 
+        if(!valid && validBefore) {
+            validBefore=false;
+            Toast.makeText(getActivity(), "enter a valid email address", Toast.LENGTH_SHORT).show();
         }
 
         if (valid) {
-            mContact.setName(name);
-            List<String> newPhones = new ArrayList<>();
-            for (int i = 0; i != phones.size(); i++) {
-                if(!phones.get(i).isEmpty())
-                    newPhones.add(phones.get(i));
-            }
-            mContact.setPhones(newPhones);
-
-            List<String> newEmails = new ArrayList<>();
-
-            for (int i = 0; i != emails.size(); i++) {
-                if(!emails.get(i).isEmpty())
-                    newEmails.add(emails.get(i));
-            }
-            mContact.setEmails(newEmails);
-
-            ContactLab.get(getActivity()).updateContact(mContact);
-            Intent resultIntent = new Intent();
-            if (deletePhoto) {
-                PictureUtils.deleteFile(pictureStoragePath, mContactPhotoName);
-            }
-
-            //save temp.png as contacts photo if it exists
-            if (!deletePhoto && mTempPhotoFile != null && mTempPhotoFile.exists()) {
-                PictureUtils.moveFile(pictureStoragePath, mTempPhotoName, pictureStoragePath, mContactPhotoName);
-            } else
-                PictureUtils.deleteFile(pictureStoragePath, mTempPhotoName);
-
-            Intent resultIntent1 = new Intent();
-            resultIntent1.putExtra(RETURN_STATE, "1");
-            resultIntent1.putExtra(CONTACT_OBJECT, mContact);
-            getActivity().setResult(Activity.RESULT_OK, resultIntent1);
-
-            getActivity().finish();
+           showConfirmSaveDialogue();
         }
     }
 
+    private void save() {
+        mContact.setName(name);
+        List<String> newPhones = new ArrayList<>();
+        for (int i = 0; i != phones.size(); i++) {
+            if(!phones.get(i).isEmpty())
+                newPhones.add(phones.get(i));
+        }
+        mContact.setPhones(newPhones);
+
+        List<String> newEmails = new ArrayList<>();
+
+        for (int i = 0; i != emails.size(); i++) {
+            if(!emails.get(i).isEmpty())
+                newEmails.add(emails.get(i));
+        }
+        mContact.setEmails(newEmails);
+
+        ContactLab.get(getActivity()).updateContact(mContact);
+        Intent resultIntent = new Intent();
+        if (deletePhoto) {
+            PictureUtils.deleteFile(pictureStoragePath, mContactPhotoName);
+        }
+
+        //validate temp.png as contacts photo if it exists
+        if (!deletePhoto && mTempPhotoFile != null && mTempPhotoFile.exists()) {
+            PictureUtils.moveFile(pictureStoragePath, mTempPhotoName, pictureStoragePath, mContactPhotoName);
+        } else
+            PictureUtils.deleteFile(pictureStoragePath, mTempPhotoName);
+
+        Intent resultIntent1 = new Intent();
+        resultIntent1.putExtra(RETURN_STATE, "1");
+        resultIntent1.putExtra(CONTACT_OBJECT, mContact);
+        getActivity().setResult(Activity.RESULT_OK, resultIntent1);
+
+        getActivity().finish();
+    }
 
     private void cancel() {
         //delete temp.png if it exists
@@ -442,14 +463,40 @@ public class ContactEditFragment extends Fragment {
 
         }
     }
+
+    private void setEditTextKeyImeChangeListener(final ExtendedEditText extendedEditText)
+    {
+        extendedEditText.setKeyImeChangeListener(new ExtendedEditText.KeyImeChange(){
+            @Override
+            public boolean onKeyIme(int keyCode, KeyEvent event)
+            {
+                if (event.getAction()==KeyEvent.ACTION_UP && event.getKeyCode() == KeyEvent.KEYCODE_BACK )
+                {
+                    extendedEditText.clearFocus();
+                    validate();
+                    View view = getActivity().getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+
+                    //Toast.makeText(getActivity(), "back", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                else
+                    return false;
+            }});
+    }
+
     private void addPhoneEditText(String text)
     {
-        EditText phoneEditText = new EditText(getContext());
+        ExtendedEditText phoneEditText = new ExtendedEditText(getContext());
         mPhones.add(phoneEditText);
         int i = mPhones.size()-1;
         mPhones.get(i).setText(text);
         mPhones.get(i).setId(i);
         mPhones.get(i).addTextChangedListener(new PhoneTextWatcher(mPhones.get(i)));
+        setEditTextKeyImeChangeListener(mPhones.get(i));
         mPhonesLayout.addView(mPhones.get(i));
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)mPhones.get(i).getLayoutParams();
         params.setMargins(10, 0, 10, 0);
@@ -458,12 +505,13 @@ public class ContactEditFragment extends Fragment {
 
     private void addEmailEditText(String text)
     {
-        EditText emailEditText = new EditText(getContext());
+        ExtendedEditText emailEditText = new ExtendedEditText(getContext());
         mEmails.add(emailEditText);
         int i = mEmails.size()-1;
         mEmails.get(i).setText(text);
         mEmails.get(i).setId(i);
         mEmails.get(i).addTextChangedListener(new EmailTextWatcher(mEmails.get(i)));
+        setEditTextKeyImeChangeListener(mEmails.get(i));
         mEmailsLayout.addView(mEmails.get(i));
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)mEmails.get(i).getLayoutParams();
         params.setMargins(10, 0, 10, 0);
@@ -472,9 +520,9 @@ public class ContactEditFragment extends Fragment {
 
 
     public class PhoneTextWatcher implements TextWatcher {
-        private EditText mEditText;
+        private ExtendedEditText mEditText;
 
-        public PhoneTextWatcher(EditText e) {
+        public PhoneTextWatcher(ExtendedEditText e) {
             mEditText = e;
         }
 
@@ -491,9 +539,9 @@ public class ContactEditFragment extends Fragment {
     }
 
     public class EmailTextWatcher implements TextWatcher {
-        private EditText mEditText;
+        private ExtendedEditText mEditText;
 
-        public EmailTextWatcher(EditText e) {
+        public EmailTextWatcher(ExtendedEditText e) {
             mEditText = e;
         }
 
@@ -522,5 +570,29 @@ public class ContactEditFragment extends Fragment {
         mContact.setPhones(phones);
         mContact.setEmails(emails);
         savedInstanceState.putSerializable(ARG_CONTACT, mContact);
+    }
+
+    private void showConfirmSaveDialogue() {
+
+        new AlertDialog.Builder(getActivity())
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("Save")
+                .setMessage("Are you sure?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //writeLogsToFile();
+                        save();
+                    }
+
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        cancel();
+                    }
+
+                })
+                .show();
     }
 }
