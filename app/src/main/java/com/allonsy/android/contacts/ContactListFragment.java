@@ -1,16 +1,21 @@
 package com.allonsy.android.contacts;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -41,6 +46,8 @@ import java.util.UUID;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
+import static android.content.ContentValues.TAG;
+
 public class ContactListFragment extends Fragment {
 
     private RecyclerView mContactRecyclerView;
@@ -50,6 +57,11 @@ public class ContactListFragment extends Fragment {
     private static final String SAVED_SUBTITLE_VISIBLE = "subtitle";
 
     private static final String CONTACT_ID = "contactID";
+
+    public static String[] permissions = new String[]{
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -139,8 +151,16 @@ public class ContactListFragment extends Fragment {
                 startActivityForResult(intent,ContactEditFragment.ADD_CONTACT);
                 return true;
             case R.id.menu_item_export_contacts:
-                ExportDatabaseCSVTask task=new ExportDatabaseCSVTask();
-                task.execute();
+                boolean permissionsGranted = true;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                    permissionsGranted = checkPermissions(getActivity());
+
+                if(!permissionsGranted)
+                    askPermissions();
+                else {
+                    ExportDatabaseCSVTask task = new ExportDatabaseCSVTask();
+                    task.execute();
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -454,5 +474,59 @@ public class ContactListFragment extends Fragment {
             }
         }
     }
+    public static boolean checkPermissions(Context context) {
+        int result;
+
+        for (String p:permissions) {
+            result = ContextCompat.checkSelfPermission(context,p);
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    public void askPermissions() {
+        int result;
+        Toast.makeText(getActivity(), "Please grant permissions on next screen", Toast.LENGTH_SHORT).show();
+        try {Thread.sleep(1000);} catch (Exception e) {Log.e(TAG, e.getMessage());}
+
+        for (String p:permissions) {
+            result = ContextCompat.checkSelfPermission(getActivity(),p);
+            if (result != PackageManager.PERMISSION_GRANTED) {
+               requestPermissions(new String[]{p}, 0);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 0: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! continue
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(getActivity(), "Permissions Not Granted", Toast.LENGTH_SHORT).show();
+                    try {Thread.sleep(1000);} catch (Exception e) {Log.e(TAG, e.getMessage());}
+                    //callback.finishActivity();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
 
 }
