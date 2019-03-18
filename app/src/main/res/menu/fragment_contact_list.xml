@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/menu_item_search"
+          android:title="@string/search"
+          app:actionViewClass="android.support.v7.widget.SearchView"
+          android:icon="@drawable/ic_menu_search"
+          app:showAsAction="ifRoom|collapseActionView" />
+    <item
+        android:id="@+id/menu_item_new_contact"
+        android:icon="@drawable/ic_menu_add"
+        android:title="@string/new_contact"
+        app:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_item_export_contacts"
+        android:title="@string/export_contacts"
+        app:showAsAction="never"/>
+
+</menu>

@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Contacts</string>
+    <string name="contact_name_hint">Enter a name for the contact.</string>
+    <string name="contact_title_label">Name</string>
+    <string name="contact_phone_label">Phone</string>
+    <string name="email_phone_label">Email</string>
+    <string name="contact_edit_done">Done</string>
+    <string name="contact_edit_cancel">Cancel</string>
+    <string name="contact_image_title">Contact Image:</string>
+    <string name="new_contact">New Contact</string>
+    <string name="export_contacts">Export to CSV</string>
+    <string name="delete_contact">Delete Contact</string>
+    <string name="plus">+</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="search">Search</string>
+    <string name="clear_search">Clear Search</string>
+    <string name="no_contacts">There are no contacts</string>
+    <string name="call_text">Call</string>
+    <plurals name="subtitle_plural">
+        <item quantity="one">%1$s contact</item>
+        <item quantity="other">%1$s contacts</item>
+    </plurals>
+</resources>
